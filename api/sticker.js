@@ -1,14 +1,22 @@
 import express from 'express'
-//import puppeteer from 'puppeteer'
+import chromium from 'chrome-aws-lambda'
+import puppeteer from 'puppeteer-core'
 
-const router = express.Router()
+const app = express()
+const PORT = process.env.PORT || 3000
 
-router.get('/', async (req, res) => {
+app.get('/api/stickers', async (req, res) => {
   const query = req.query.q
   if (!query) return res.status(400).json({ status: false, message: 'Falta el parámetro ?q=' })
 
   try {
-    const browser = await puppeteer.launch({ headless: 'new' })
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+      defaultViewport: chromium.defaultViewport
+    })
+
     const page = await browser.newPage()
     await page.goto(`https://sticker.ly/s/${encodeURIComponent(query)}`, { waitUntil: 'networkidle2' })
 
@@ -45,4 +53,8 @@ router.get('/', async (req, res) => {
   } catch (e) {
     res.status(500).json({ status: false, message: 'Error al obtener datos', error: e.message })
   }
+})
+
+app.listen(PORT, () => {
+  console.log('API Sticker.ly ejecutándose en puerto ' + PORT)
 })
