@@ -1,20 +1,18 @@
 import express from 'express'
-import chromium from 'chrome-aws-lambda'
 import puppeteer from 'puppeteer-core'
+import chromium from 'chrome-aws-lambda'
 
-const app = express()
-const PORT = process.env.PORT || 3000
+const router = express.Router()
 
-app.get('/api/stickers', async (req, res) => {
+router.get('/', async (req, res) => {
   const query = req.query.q
   if (!query) return res.status(400).json({ status: false, message: 'Falta el parámetro ?q=' })
 
   try {
     const browser = await puppeteer.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath,
+      executablePath: await chromium.executablePath || '/usr/bin/chromium-browser',
       headless: chromium.headless,
-      defaultViewport: chromium.defaultViewport
     })
 
     const page = await browser.newPage()
@@ -55,6 +53,4 @@ app.get('/api/stickers', async (req, res) => {
   }
 })
 
-app.listen(PORT, () => {
-  console.log('API Sticker.ly ejecutándose en puerto ' + PORT)
-})
+export default router
