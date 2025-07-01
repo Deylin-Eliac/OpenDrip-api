@@ -1,14 +1,19 @@
 {
-  "name": "sticker-api",
+  "name": "multi-api-platform",
   "version": "1.0.0",
+  "description": "Una plataforma de múltiples APIs como stickerly, YouTube, Instagram y más.",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node index.js"
   },
+  "engines": {
+    "node": ">=18.x"
+  },
   "dependencies": {
     "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
     "express": "^4.18.2"
   }
 }
