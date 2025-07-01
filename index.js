@@ -2,24 +2,30 @@ import express from 'express'
 import fs from 'fs'
 import path from 'path'
 import cors from 'cors'
+import { fileURLToPath } from 'url'
 
 const app = express()
-const __dirname = path.resolve()
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 app.use(cors())
 app.use(express.json())
 
-
 const apiPath = path.join(__dirname, 'api')
-fs.readdirSync(apiPath).forEach(file => {
+
+fs.readdirSync(apiPath).forEach(async (file) => {
   if (file.endsWith('.js')) {
     const route = '/api/' + file.replace('.js', '')
-    import(path.join(apiPath, file)).then(module => {
+    const filePath = path.join(apiPath, file)
+
+    try {
+      const module = await import(filePath)
       app.use(route, module.default || module)
       console.log(`✅ Ruta cargada: ${route}`)
-    }).catch(err => {
+    } catch (err) {
       console.error(`❌ Error cargando ${file}:`, err)
-    })
+    }
   }
 })
 
