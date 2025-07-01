@@ -1,6 +1,5 @@
 import express from 'express'
-import puppeteer from 'puppeteer-core'
-import chromium from 'chrome-aws-lambda'
+import puppeteer from 'puppeteer'
 
 const router = express.Router()
 
@@ -10,9 +9,8 @@ router.get('/', async (req, res) => {
 
   try {
     const browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath, // ← esto es lo importante
-      headless: chromium.headless,
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox'] // importante para Render
     })
 
     const page = await browser.newPage()
