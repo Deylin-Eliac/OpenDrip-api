@@ -1,26 +1,13 @@
 {
-  "name": "stickerly-buscador",
-  "version": "1.0.0",
-  "description": "Buscador de stickers usando sticker.ly",
-  "main": "index.js",
+  "name": "stickerly-api",
   "type": "module",
+  "main": "index.js",
   "scripts": {
-    "start": "node test.js"
+    "start": "node index.js"
   },
-  "keywords": [
-    "stickerly",
-    "stickers",
-    "whatsapp",
-    "api",
-    "buscador"
-  ],
-  "author": "Deylin B. O.",
-  "license": "MIT",
   "dependencies": {
-    "cheerio": "npm:cheerio@1.0.0-rc.12",
-    "axios": "^1.1.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "sticker.ly": "^1.0.0"
+    "puppeteer": "^21.3.8"
   }
 }
