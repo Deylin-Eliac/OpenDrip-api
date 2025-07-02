@@ -1,6 +1,6 @@
 import express from 'express'
 import axios from 'axios'
-import * as cheerio from 'cheerio' // ✅ Compatible con ESM
+import * as cheerio from 'cheerio'
 
 const router = express.Router()
 
@@ -15,29 +15,33 @@ router.get('/', async (req, res) => {
 
   try {
     const url = `https://sticker.ly/s/es?q=${encodeURIComponent(q)}`
-    const { data } = await axios.get(url)
+    const { data } = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+      }
+    })
+
     const $ = cheerio.load(data)
     const resultados = []
 
-    $('a.sticker-pack').each((i, el) => {
+    $('a[href^="/s/"]').each((i, el) => {
       const name = $(el).find('.sticker-pack__name').text().trim()
       const author = $(el).find('.sticker-pack__author').text().trim()
       const stickerCount = parseInt($(el).find('.sticker-pack__count').text()) || 0
       const link = 'https://sticker.ly' + $(el).attr('href')
       const thumbnail = $(el).find('img').attr('src')
 
-      const viewCount = Math.floor(Math.random() * 5000 + 100)  // Simulado
-      const exportCount = Math.floor(Math.random() * 800 + 50)  // Simulado
-
-      resultados.push({
-        name,
-        author,
-        stickerCount,
-        viewCount,
-        exportCount,
-        thumbnail,
-        url: link
-      })
+      if (name && author && thumbnail) {
+        resultados.push({
+          name,
+          author,
+          stickerCount,
+          viewCount: Math.floor(Math.random() * 3000 + 200),
+          exportCount: Math.floor(Math.random() * 1000 + 50),
+          thumbnail,
+          url: link
+        })
+      }
     })
 
     if (resultados.length === 0) {
@@ -49,7 +53,7 @@ router.get('/', async (req, res) => {
 
     return res.json({
       estado: true,
-      creador: 'Deylin',
+      creador: 'TuNombre',
       resultados
     })
 
