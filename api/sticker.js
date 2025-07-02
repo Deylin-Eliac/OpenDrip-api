@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       status: false,
-      message: '❌ Error al buscar stickers',
+      message: '😺 Error al buscar stickers',
       error: err.message
     })
   } finally {
