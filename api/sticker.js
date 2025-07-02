@@ -1,33 +1,16 @@
-// sticker.js
-import stickerly from 'sticker.ly'
+// /api/sticker.js
+import express from 'express'
+import { buscarStickers } from '../lib/stickerly.js' // tu función personalizada
 
-export async function buscarStickers(query = '') {
-  if (!query) throw '❌ Debes escribir una palabra clave para buscar stickers.'
+const router = express.Router()
 
-  try {
-    const resultados = await stickerly.search(query, { limit: 10 }) // puedes cambiar el límite
+router.get('/', async (req, res) => {
+  const q = req.query.q
+  if (!q) return res.status(400).json({ status: false, message: 'Falta el parámetro q' })
 
-    const stickers = resultados.map(pack => ({
-      name: pack.name,
-      author: pack.author,
-      stickerCount: pack.stickers.length,
-      viewCount: pack.viewCount,
-      exportCount: pack.exportCount,
-      isPaid: pack.isPaid,
-      thumbnail: pack.cover,
-      url: `https://sticker.ly/s/${pack.id}`
-    }))
+  const resultado = await buscarStickers(q)
+  res.json(resultado)
+})
 
-    return {
-      status: true,
-      total: stickers.length,
-      results: stickers
-    }
-  } catch (e) {
-    return {
-      status: false,
-      message: '❌ Error al buscar stickers',
-      error: e.message || e
-    }
-  }
-}
+export default router
+
