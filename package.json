@@ -17,6 +17,6 @@
   "author": "Deylin B. O.",
   "license": "MIT",
   "dependencies": {
-    "sticker.ly": "^1.0.7"
+    "sticker.ly": "^1.0.0"
   }
 }
