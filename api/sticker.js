@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const url = `https://sticker.ly/s/es?q=${encodeURIComponent(q)}`
+    const url = `https://www.flaticon.es/resultados?word=${encodeURIComponent(q)}&type=sticker`
     const { data } = await axios.get(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
@@ -24,31 +24,25 @@ router.get('/', async (req, res) => {
     const $ = cheerio.load(data)
     const resultados = []
 
-    $('a[href^="/s/"]').each((i, el) => {
-      const name = $(el).find('.sticker-pack__name').text().trim()
-      const author = $(el).find('.sticker-pack__author').text().trim()
-      const stickerCount = parseInt($(el).find('.sticker-pack__count').text()) || 0
-      const link = 'https://sticker.ly' + $(el).attr('href')
-      const thumbnail = $(el).find('img').attr('src')
+    $('li.icon--item').each((i, el) => {
+      const anchor = $(el).find('a.icon--holder')
+      const nombre = anchor.attr('aria-label')?.trim() || 'Sticker'
+      const url = 'https://www.flaticon.es' + anchor.attr('href')
+      const thumbnail = $(el).find('img').attr('data-src') || $(el).find('img').attr('src')
+      const autor = $(el).find('.author--name').text().trim() || 'Desconocido'
 
-      if (name && author && thumbnail) {
+      if (nombre && url && thumbnail) {
         resultados.push({
-          name,
-          author,
-          stickerCount,
-          viewCount: Math.floor(Math.random() * 3000 + 200),
-          exportCount: Math.floor(Math.random() * 1000 + 50),
-          thumbnail,
-          url: link
+          nombre,
+          autor,
+          url,
+          thumbnail
         })
       }
     })
 
-    if (resultados.length === 0) {
-      return res.json({
-        estado: false,
-        mensaje: 'No se encontraron resultados'
-      })
+    if (!resultados.length) {
+      return res.json({ estado: false, mensaje: 'No se encontraron stickers' })
     }
 
     return res.json({
@@ -57,11 +51,11 @@ router.get('/', async (req, res) => {
       resultados
     })
 
-  } catch (err) {
+  } catch (error) {
     return res.status(500).json({
       estado: false,
-      mensaje: 'Ocurrió un error al buscar stickers',
-      error: err.message
+      mensaje: 'Error al buscar en Flaticon',
+      error: error.message
     })
   }
 })
