@@ -1,64 +1,33 @@
-import express from 'express'
-import axios from 'axios'
-import * as cheerio from 'cheerio'
+// sticker.js
+import stickerly from 'sticker.ly'
 
-const router = express.Router()
-
-router.get('/', async (req, res) => {
-  const q = req.query.q
-  if (!q) {
-    return res.status(400).json({
-      estado: false,
-      mensaje: 'Falta el parámetro ?q='
-    })
-  }
+export async function buscarStickers(query = '') {
+  if (!query) throw '❌ Debes escribir una palabra clave para buscar stickers.'
 
   try {
-    const url = `https://www.flaticon.es/resultados?word=${encodeURIComponent(q)}&type=sticker`
-    const { data } = await axios.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      }
-    })
+    const resultados = await stickerly.search(query, { limit: 10 }) // puedes cambiar el límite
 
-    const $ = cheerio.load(data)
-    const resultados = []
+    const stickers = resultados.map(pack => ({
+      name: pack.name,
+      author: pack.author,
+      stickerCount: pack.stickers.length,
+      viewCount: pack.viewCount,
+      exportCount: pack.exportCount,
+      isPaid: pack.isPaid,
+      thumbnail: pack.cover,
+      url: `https://sticker.ly/s/${pack.id}`
+    }))
 
-    $('li.icon--item').each((i, el) => {
-      const anchor = $(el).find('a.icon--holder')
-      const nombre = anchor.attr('aria-label')?.trim() || 'Sticker'
-      const relativeUrl = anchor?.attr('href')?.trim()
-const url = relativeUrl ? `https://www.flaticon.es${relativeUrl}` : null
-      const thumbnail = $(el).find('img').attr('data-src') || $(el).find('img').attr('src')
-      const autor = $(el).find('.author--name').text().trim() || 'Desconocido'
-
-      if (nombre && url && thumbnail) {
-        resultados.push({
-          nombre,
-          autor,
-          url,
-          thumbnail
-        })
-      }
-    })
-
-    if (!resultados.length) {
-      return res.json({ estado: false, mensaje: 'No se encontraron stickers' })
+    return {
+      status: true,
+      total: stickers.length,
+      results: stickers
     }
-
-    return res.json({
-      estado: true,
-      creador: 'Deylin',
-      resultados
-    })
-
-  } catch (error) {
-    return res.status(500).json({
-      estado: false,
-      mensaje: 'Error al buscar en Flaticon',
-      error: error.message
-    })
+  } catch (e) {
+    return {
+      status: false,
+      message: '❌ Error al buscar stickers',
+      error: e.message || e
+    }
   }
-})
-
-export default router
+}
