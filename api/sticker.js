@@ -27,7 +27,8 @@ router.get('/', async (req, res) => {
     $('li.icon--item').each((i, el) => {
       const anchor = $(el).find('a.icon--holder')
       const nombre = anchor.attr('aria-label')?.trim() || 'Sticker'
-      const url = 'https://www.flaticon.es' + anchor.attr('href')
+      const relativeUrl = anchor?.attr('href')?.trim()
+const url = relativeUrl ? `https://www.flaticon.es${relativeUrl}` : null
       const thumbnail = $(el).find('img').attr('data-src') || $(el).find('img').attr('src')
       const autor = $(el).find('.author--name').text().trim() || 'Desconocido'
 
