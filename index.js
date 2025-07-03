@@ -1,26 +1,18 @@
 // index.js
 import express from 'express'
-import fs from 'fs'
-import path from 'path'
 import cors from 'cors'
-import { fileURLToPath } from 'url'
+import mp3Route from './api/mp3.js'
 
 const app = express()
+const PORT = process.env.PORT || 3000
+
 app.use(cors())
-app.use(express.json())
+app.use('/api', mp3Route)
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const apiPath = path.join(__dirname, 'api')
-
-// Cargar dinámicamente todas las rutas de la carpeta /api
-fs.readdirSync(apiPath).forEach(async (file) => {
-  if (file.endsWith('.js')) {
-    const route = '/' + file.replace('.js', '')
-    const module = await import(path.join(apiPath, file))
-    app.use(route, module.default)
-  }
+app.get('/', (req, res) => {
+  res.send('🧃 API MP3 YouTube by Deylin')
 })
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log(`✅ API lista en http://localhost:${PORT}`))
+app.listen(PORT, () => {
+  console.log(`✅ API corriendo en http://localhost:${PORT}`)
+})
