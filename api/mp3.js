@@ -20,10 +20,15 @@ router.get('/mp3', async (req, res) => {
   const command = `"${ytdlpPath}" -x --audio-format mp3 -o "${output}" "${url}"`
 
   exec(command, (error, stdout, stderr) => {
-    if (error) {
-      console.error('❌ Error al ejecutar yt-dlp:', stderr)
-      return res.status(500).json({ status: false, error: '❌ Error al descargar audio' })
-    }
+  if (error) {
+    console.error('❌ yt-dlp stderr:\n', stderr)
+    return res.status(500).json({
+      status: false,
+      error: '❌ yt-dlp error',
+      stderr: stderr,
+      stdout: stdout
+    })
+  }
 
     res.download(output, filename, (err) => {
       if (err) {
