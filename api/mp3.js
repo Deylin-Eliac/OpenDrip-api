@@ -13,7 +13,8 @@ router.get('/mp3', async (req, res) => {
   const url = req.query.url
   if (!url) return res.status(400).json({ status: false, error: '❌ Falta el parámetro ?url=' })
 
-  const output = path.join('/tmp', `audio-${Date.now()}.mp3`)
+  const filename = `audio-${Date.now()}.mp3`
+  const output = path.join('/tmp', filename)
   const ytdlpPath = path.join(__dirname, '../bin/yt-dlp')
 
   const command = `"${ytdlpPath}" -x --audio-format mp3 -o "${output}" "${url}"`
@@ -24,13 +25,13 @@ router.get('/mp3', async (req, res) => {
       return res.status(500).json({ status: false, error: '❌ Error al descargar audio' })
     }
 
-    res.download(output, (err) => {
+    res.download(output, filename, (err) => {
       if (err) {
         console.error('❌ Error al enviar el archivo:', err)
         res.status(500).json({ status: false, error: '❌ Error al enviar el archivo' })
       }
 
-      // Eliminar archivo temporal
+      // Eliminar archivo temporal después de enviar
       fs.unlink(output, () => {})
     })
   })
