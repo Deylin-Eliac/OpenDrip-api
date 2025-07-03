@@ -1,14 +1,16 @@
 {
-  "name": "youtube-mp3-api",
-  "type": "module",
+  "name": "ytmp3-api",
+  "version": "1.0.0",
+  "description": "API para descargar audios de YouTube en MP3 con portada",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "cheerio": "npm:cheerio@1.0.0-rc.12",
+    "axios": "^1.6.8",
     "express": "^4.18.2",
-    "ytdl-core": "^4.11.4"
+    "fluent-ffmpeg": "^2.1.2",
+    "uuid": "^9.0.1"
   }
 }
