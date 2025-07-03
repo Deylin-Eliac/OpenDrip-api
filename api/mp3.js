@@ -1,48 +1,27 @@
-import Cookey from 'cookey';
+// api/mp3.js
+import express from 'express'
+import ytdl from 'ytdl-core'
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    res.status(405).json({ status: false, message: 'Método no permitido' });
-    return;
+const router = express.Router()
+
+router.get('/mp3', async (req, res) => {
+  const url = req.query.url
+  if (!url || !ytdl.validateURL(url)) {
+    return res.status(400).json({ status: false, error: '❌ URL inválida de YouTube' })
   }
 
   try {
-    const { url } = req.query;
-    if (!url) return res.status(400).json({ status: false, message: 'Falta parámetro url' });
+    const info = await ytdl.getInfo(url)
+    const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' })
 
-    const cookey = new Cookey();
+    res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp3"`)
+    res.setHeader('Content-Type', 'audio/mpeg')
 
-    // Obtener info y audios
-    const info = await cookey.videoInfo(url);
-    const audios = await cookey.downloadAudio(url);
-
-    if (!audios || audios.length === 0) {
-      return res.status(404).json({ status: false, message: 'No se encontraron audios' });
-    }
-
-    // Mejor audio (mayor bitrate)
-    let bestAudio = audios.reduce((prev, cur) => (prev.bitrate > cur.bitrate ? prev : cur));
-
-    res.status(200).json({
-      status: true,
-      creator: 'Deylin',
-      audio: {
-        title: info.title,
-        id: info.videoId,
-        author: info.author.name,
-        image: info.thumbnails[info.thumbnails.length - 1].url,
-        views: info.viewCount,
-        duration: info.lengthSeconds,
-        download: {
-          url: bestAudio.url,
-          bitrate: bestAudio.bitrate,
-          size: bestAudio.contentLength,
-          extension: bestAudio.container,
-        },
-      },
-    });
-  } catch (error) {
-    console.error('Error en /api/mp3:', error);
-    res.status(500).json({ status: false, message: 'Error interno del servidor' });
+    ytdl(url, { format: audioFormat, filter: 'audioonly' }).pipe(res)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ status: false, error: '❌ Error al procesar el audio' })
   }
-}
+})
+
+export default router
