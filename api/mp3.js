@@ -1,27 +1,39 @@
 // api/mp3.js
 import express from 'express'
-import ytdl from 'ytdl-core'
+import { exec } from 'child_process'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import fs from 'fs'
 
 const router = express.Router()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 router.get('/mp3', async (req, res) => {
   const url = req.query.url
-  if (!url || !ytdl.validateURL(url)) {
-    return res.status(400).json({ status: false, error: '❌ URL inválida de YouTube' })
-  }
+  if (!url) return res.status(400).json({ status: false, error: '❌ Falta el parámetro ?url=' })
 
-  try {
-    const info = await ytdl.getInfo(url)
-    const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' })
+  const output = path.join('/tmp', `audio-${Date.now()}.mp3`)
+  const ytdlpPath = path.join(__dirname, '../bin/yt-dlp')
 
-    res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp3"`)
-    res.setHeader('Content-Type', 'audio/mpeg')
+  const command = `"${ytdlpPath}" -x --audio-format mp3 -o "${output}" "${url}"`
 
-    ytdl(url, { format: audioFormat, filter: 'audioonly' }).pipe(res)
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ status: false, error: '❌ Error al procesar el audio' })
-  }
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error('❌ Error al ejecutar yt-dlp:', stderr)
+      return res.status(500).json({ status: false, error: '❌ Error al descargar audio' })
+    }
+
+    res.download(output, (err) => {
+      if (err) {
+        console.error('❌ Error al enviar el archivo:', err)
+        res.status(500).json({ status: false, error: '❌ Error al enviar el archivo' })
+      }
+
+      // Eliminar archivo temporal
+      fs.unlink(output, () => {})
+    })
+  })
 })
 
 export default router
